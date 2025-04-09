@@ -22,6 +22,9 @@ const toDoList = [
 function Writing() {
 	const [list, setList] = useState([]);
 	const [newList, setnewList] = useState("");
+	const [edit, setEdit] = useState(false);
+	const [editedName, setEditedName] = useState("");
+	const [editingId, setEditingId] = useState(null);
 
 	function addList() {
 		if (newList.trim() === "") {
@@ -37,8 +40,37 @@ function Writing() {
 		}
 	}
 
-	function deleteList(deleteId){
+	function doneList(DoneId) {
+		setList((prevList) =>
+			prevList.map((task) => {
+				if (DoneId === task.id) {
+					return { ...task, status: !task.status };
+				} else {
+					return task;
+				}
+			})
+		);
+	}
 
+	function deleteList(deleteId) {
+		setList((prevList) => prevList.filter((task) => task.id !== deleteId));
+	}
+
+	function editing(editedInput, editingId) {
+		setEdit(true);
+		setEditedName(editedInput);
+		setEditingId(editingId);
+		console.log(editingId);
+	}
+
+	function editingProcess() {
+		setList((prevlist) =>
+			prevlist.map((task) => {
+				if (task.id === editingId) {
+					return { ...task, list: editedName };
+				} else return task;
+			})
+		);
 	}
 
 	useEffect(() => {
@@ -50,15 +82,22 @@ function Writing() {
 			This is the to-do list exercise
 			<div>Displaying Data via Mapping</div>
 			<div className="py-5 flex flex-col gap-2">
-				<div>New To Do List input</div>
+				<div>{edit ? "PUT Your editing list" : "Put New list"}</div>
 				<input
 					type="text"
 					placeholder="Please input your new to-do-list here"
 					className="border w-1/2"
-					value={newList}
-					onChange={(e) => setnewList(e.target.value)}
+					value={edit ? editedName : newList}
+					onChange={
+						edit
+							? (e) => setEditedName(e.target.value)
+							: (e) => setnewList(e.target.value)
+					}
 				></input>
-				<button className="border w-1/2" onClick={addList}>
+				<button
+					className="border w-1/2"
+					onClick={edit ? editingProcess : addList}
+				>
 					Submit
 				</button>
 			</div>
@@ -66,9 +105,24 @@ function Writing() {
 				{list.map((e) => (
 					<ul key={e.id}>
 						<li>
-							{e.list} <input type="checkbox"></input>{" "}
-							<button className="border">Delete</button>{" "}
-							<button className="border">Edit</button>
+							{e.list}{" "}
+							<input
+								type="checkbox"
+								onClick={() => {
+									doneList(e.id);
+								}}
+							></input>{" "}
+							<button
+								className="border"
+								onClick={() => {
+									deleteList(e.id);
+								}}
+							>
+								Delete
+							</button>{" "}
+							<button className="border" onClick={() => editing(e.list, e.id)}>
+								Edit
+							</button>
 						</li>
 					</ul>
 				))}
